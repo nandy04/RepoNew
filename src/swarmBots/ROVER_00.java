@@ -116,7 +116,7 @@ public class ROVER_00 extends Rover {
 		
 				// **** Request Rover Location from RCP ****
 				currentLoc = getCurrentLocation();
-				System.out.println(rovername + " currentLoc at start: " + currentLoc);
+//				System.out.println(rovername + " currentLoc at start: " + currentLoc);
 				
 				// after getting location set previous equal current to be able to check for stuckness and blocked later
 				previousLoc = currentLoc;		
@@ -127,7 +127,7 @@ public class ROVER_00 extends Rover {
 				// gets the scanMap from the server based on the Rover current location
 				scanMap = doScan(); 
 				// prints the scanMap to the Console output for debug purposes
-				scanMap.debugPrintMap();
+//				scanMap.debugPrintMap();
 				
 		
 							
@@ -142,45 +142,94 @@ public class ROVER_00 extends Rover {
 					MapTile[][] scanMapTiles = scanMap.getScanMap();
 					int centerIndex = (scanMap.getEdgeSize() - 1)/2;
 				
-					// check scanMap to see if path is blocked to the east
-					// (scanMap may be old data by now)
-					if (scanMapTiles[centerIndex+1][centerIndex].getHasRover() 
-							&& scanMapTiles[centerIndex+1][centerIndex].getTerrain() != Terrain.ROCK
-							&& scanMapTiles[centerIndex+1][centerIndex].getTerrain() != Terrain.SAND
-							&& scanMapTiles[centerIndex +1][centerIndex].getTerrain() != Terrain.NONE) {
-			
-						moveEast();
+					
+					 if (!scanMapTiles[centerIndex+1][centerIndex].getHasRover() 
+								&& scanMapTiles[centerIndex+1][centerIndex].getTerrain() == Terrain.SOIL) {
+				
+							moveEast();
+							blocked = false;
+							currentDir ="E";
+						}
+					 else if (!scanMapTiles[centerIndex][centerIndex-1].getHasRover() 
+							&& scanMapTiles[centerIndex][centerIndex-1].getTerrain() == Terrain.SOIL) {
+						 System.out.println("Blocked, moving North");
+						moveNorth();
 						blocked = false;
+						currentDir ="N";
+						
 					}
-					else if (scanMapTiles[centerIndex][centerIndex-1].getHasRover() 
-							&& scanMapTiles[centerIndex-1][centerIndex].getTerrain() != Terrain.ROCK
-							&& scanMapTiles[centerIndex-1][centerIndex].getTerrain() != Terrain.SAND
-							&& scanMapTiles[centerIndex -1][centerIndex].getTerrain() != Terrain.NONE) {
+					
+					else if (!scanMapTiles[centerIndex][centerIndex+1].getHasRover() 
+							&& scanMapTiles[centerIndex][centerIndex+1].getTerrain() == Terrain.SOIL) {
 			
-						moveWest();
-						blocked = false;
-					}
-					else{
+						System.out.println("Blocked, moving South");
 						moveSouth();
+						blocked = false;
+						currentDir ="S";
+						
+					}
+					
+					else{
+						
+						moveWest();
+						
 						blocked =false;
+						currentDir ="W";
 					}
 						
 					
 					
 				} else {
-	
-					if(currentDir =="N")
-						moveNorth();
-					else if(currentDir == "S")
-						moveSouth();
-					else if(currentDir == "W")
-						moveWest();
-					else
-						moveEast();
+					MapTile[][] scanMapTiles = scanMap.getScanMap();
+					int centerIndex = (scanMap.getEdgeSize() - 1)/2;
+					
+					if(currentDir =="N"){
+						
+					
+						 if (!scanMapTiles[centerIndex][centerIndex-1].getHasRover() 
+									&& scanMapTiles[centerIndex][centerIndex-1].getTerrain() == Terrain.SOIL) {
+								moveNorth();
+								System.out.println("Not blocked, moving North");
+							}
+						 else
+							 blocked = true;
+					}
+					else if(currentDir == "S"){
+						 if (!scanMapTiles[centerIndex][centerIndex+1].getHasRover() 
+								&& scanMapTiles[centerIndex][centerIndex+1].getTerrain() == Terrain.SOIL) {
+							 System.out.println("Not blocked, moving SOuth");
+							moveSouth();
+//							
+						}
+						 else
+							 blocked = true;
+					}
+						
+					else if(currentDir == "E"){
+						 if (!scanMapTiles[centerIndex+1][centerIndex].getHasRover() 
+								&& scanMapTiles[centerIndex+1][centerIndex].getTerrain() == Terrain.SOIL) {		
+							moveEast();
+						}
+						 else 
+							 blocked = true;
+					}
+						
+					else{
+						if (!scanMapTiles[centerIndex][centerIndex+1].getHasRover() 
+								&& scanMapTiles[centerIndex][centerIndex+1].getTerrain() == Terrain.SOIL) {
+							moveWest();
+						}
+					 else
+						 blocked = true;
+					}
+				
+				
+					
+						
 					
 					
 				}
-	
+//	
 				// another call for current location
 				currentLoc = getCurrentLocation();
 
@@ -191,7 +240,7 @@ public class ROVER_00 extends Rover {
 				// this is the Rovers HeartBeat, it regulates how fast the Rover cycles through the control loop
 				Thread.sleep(sleepTime);
 				
-				System.out.println("ROVER_00 ------------ bottom process control --------------"); 
+//				System.out.println("ROVER_00 ------------ bottom process control --------------"); 
 			}  // END of Rover control While(true) loop
 		
 		// This catch block closes the open socket connection to the server
@@ -212,7 +261,7 @@ public class ROVER_00 extends Rover {
 	
 	// ####################### Support Methods #############################
 	
-
+	
 	
 
 
