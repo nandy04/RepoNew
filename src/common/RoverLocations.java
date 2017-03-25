@@ -49,8 +49,9 @@ public class RoverLocations {
 		for(RoverConfiguration rovloc : roverHash.keySet()){
 			String key = rovloc.toString();
             String value = roverHash.get(rovloc).toString();  
-            System.out.println(key + " " + value);  
+            System.err.println(key + " " + value);  
     	}
+		System.out.println("\n-----------------------\n");
 	}
 	
 	public synchronized HashMap<RoverConfiguration, Coord> getHashMapClone(){	

@@ -14,6 +14,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 
+import common.Communication;
 import common.Coord;
 import common.MapTile;
 import common.Rover;
@@ -47,7 +48,10 @@ public class ROVER_01 extends Rover {
 	 * Connects to the server then enters the processing loop.
 	 */
 	private void run() throws IOException, InterruptedException {
+		 String url = "http://localhost:3000/api";
+	        String corp_secret = "gz5YhL70a2";
 
+	        Communication com = new Communication(url, rovername, corp_secret);
 		// Make connection to SwarmServer and initialize streams
 		Socket socket = null;
 		try {
@@ -115,9 +119,13 @@ public class ROVER_01 extends Rover {
 			
 			
 			while (true) {                     //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-		
+				
 				// **** Request Rover Location from RCP ****
 				currentLoc = getCurrentLocation();
+				
+				
+//			        System.err.println("GOT: " + com.getRoverLocations());
+			        
 //				System.out.println(rovername + " currentLoc at start: " + currentLoc);
 				
 				// after getting location set previous equal current to be able to check for stuckness and blocked later
@@ -136,12 +144,13 @@ public class ROVER_01 extends Rover {
 				// ***** get TIMER time remaining *****
 				timeRemaining = getTimeRemaining();
 				
-	
+				MapTile[][] scanMapTiles =scanMap.getScanMap();
+				  System.out.println("post message: " + com.postScanMapTiles(currentLoc, scanMapTiles));
 				
 				// ***** MOVING *****
 				// try moving east 5 block if blocked
 				if (blocked) {
-					MapTile[][] scanMapTiles = scanMap.getScanMap();
+					scanMapTiles = scanMap.getScanMap();
 					int centerIndex = (scanMap.getEdgeSize() - 1)/2;
 				
 					
@@ -182,7 +191,7 @@ public class ROVER_01 extends Rover {
 					
 					
 				} else {
-					MapTile[][] scanMapTiles = scanMap.getScanMap();
+					scanMapTiles = scanMap.getScanMap();
 					int centerIndex = (scanMap.getEdgeSize() - 1)/2;
 					
 					if(currentDir =="N"){

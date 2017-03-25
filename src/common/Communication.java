@@ -31,7 +31,7 @@ public class Communication {
         this.parser = new JSONParser();
         this.rovername = rovername;
         this.corp_secret = corp_secret;
-
+        System.out.println(rovername + " connnected to the server");
     }
     
     
@@ -50,6 +50,8 @@ public class Communication {
             con.setRequestMethod("POST");
             con.setRequestProperty("Rover-Name", rovername);
             con.setRequestProperty("Corp-Secret", corp_secret);
+            con.setRequestProperty("Rover-CoordX", String.valueOf(currentLoc.getXpos()));
+            con.setRequestProperty("Rover-CoordY", String.valueOf(currentLoc.getYpos()));
             con.setRequestProperty("Content-Type", "application/json");
 
             byte[] jsonBytes = data.toString().getBytes("UTF-8");
@@ -146,6 +148,52 @@ public class Communication {
 
         return parseResponseStr(responseStr);
     }
+    
+    // for requesting all rover locations
+    public JSONObject getRoverLocations() {
+
+        URL obj = null;
+        String responseStr = "";
+        try {
+            obj = new URL(url + "/locations");
+            HttpURLConnection con = (HttpURLConnection) obj.openConnection();
+            
+            con.setRequestProperty("Rover-Name", rovername);
+            con.setRequestProperty("Corp-Secret", corp_secret);
+            con.setRequestMethod("GET");
+
+            int responseCode = con.getResponseCode();
+            System.out.println("\nSending 'GET' request to URL : " + url);
+            System.out.println("Response Code : " + responseCode);
+
+            BufferedReader in = new BufferedReader(
+                    new InputStreamReader(con.getInputStream()));
+            String inputLine;
+            StringBuffer response = new StringBuffer();
+
+            while ((inputLine = in.readLine()) != null) {
+                response.append(inputLine);
+            }
+            in.close();
+
+            responseStr = response.toString();
+
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        
+        JSONObject jobj = null;
+        try {
+			jobj = (JSONObject) parser.parse(responseStr);
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+        
+        return jobj;
+    }
 
     public JSONArray parseResponseStr(String response) {
         JSONArray data = null;
@@ -157,6 +205,7 @@ public class Communication {
             }
 
         } catch (ParseException e) {
+        	System.err.println("ERROR PARSING LOCATIONS...........BRUH");
             e.printStackTrace();
         }
 

@@ -19,6 +19,14 @@ public class Coord {
 		this.ypos = y;
 	}
 	
+	public int getXpos(){
+		return this.xpos;
+	}
+	
+	public int getYpos(){
+		return this.ypos;
+	}
+	
     @Override
     public int hashCode() {
         return new HashCodeBuilder(17, 31). // two randomly chosen prime numbers

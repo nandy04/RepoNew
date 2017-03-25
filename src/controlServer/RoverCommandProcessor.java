@@ -18,9 +18,12 @@ import java.util.Map.Entry;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 
+import org.json.simple.JSONObject;
+
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
+import common.Communication;
 import common.Coord;
 import common.MapTile;
 import common.PlanetMap;
@@ -131,6 +134,9 @@ public class RoverCommandProcessor {
 		myWorker = new MyGUIWorker(mainPanel);
 		
 		
+
+        
+		
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
 				// currently sending it when calling the updateGUIDisplay() method
@@ -184,6 +190,8 @@ public class RoverCommandProcessor {
          * Then runs the Rover Command Process simulator server        
          */
         public void run() {
+        	String url = "http://localhost:3000/api";
+            String corp_secret = "gz5YhL70a2";
             try {
                 // Create character streams for the socket.
                 inFromRover = new BufferedReader(new InputStreamReader(
@@ -209,6 +217,8 @@ public class RoverCommandProcessor {
                 
                 // make and instantiate a Rover object connected to this thread if one does not exist
                 RoverStats rover;
+                // to connect to server and get all rover locations
+                Communication com;
                 if(listOfRovers.containsKey(roverNameString)){
                 	rover = listOfRovers.get(roverNameString);
                 } else {                	
@@ -217,6 +227,8 @@ public class RoverCommandProcessor {
   	                listOfRovers.put(roverNameString, rover);
                 }
                 
+    	    	com = new Communication(url, rover.getRoverName().toString(), corp_secret);
+
 
                 // ##### Run the Rover Control Processor server #####
                 while (roversAreGO) {	
@@ -257,6 +269,9 @@ public class RoverCommandProcessor {
                     	
                     	// Update the GUI display with all the new rover locations when any individual rover moves
             	    	updateGUIDisplay();
+            	    
+                    	
+            	    	locationsDisplayUpdate(com.getRoverLocations());
                     	
             	    	
                     
@@ -268,9 +283,16 @@ public class RoverCommandProcessor {
                     	//System.out.println("SWARM: ------ LOC ------"); //debug test input parsing
                     	// does not need to synchronize-lock scienceLocations because not changing any values
             	    	Coord roverPos = roverLocations.getLocation(rover.getRoverName());
+            	    	
             	    	xpos = roverPos.xpos;
             	    	ypos = roverPos.ypos;
                     	outToRover.println("LOC " + xpos + " " + ypos);
+//                    	System.err.println("LOCATION " + xpos + " " + ypos);
+//                    	roverLocations.printRovers();
+//                    	System.err.println("LOCATION " + xpos + " " + ypos);
+                    	
+                    	
+                    	
                     	
                     
                     	
@@ -802,6 +824,10 @@ public class RoverCommandProcessor {
 	
 	static void scoreDisplayUpdate() throws Exception{
 		myWorker.displayScore(corpCollectedScience);
+	}
+	
+	static void locationsDisplayUpdate(JSONObject obj) throws Exception{
+		myWorker.displayLocations(obj);
 	}
 	
 	static void stopRoverAreGO(){

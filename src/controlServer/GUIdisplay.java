@@ -19,6 +19,8 @@ import javax.swing.JTextField;
 import javax.swing.SwingWorker;
 import javax.swing.Timer;
 
+import org.json.simple.JSONObject;
+
 import UI_support.GraphicTile;
 import UI_support.LineSegment;
 import common.Coord;
@@ -45,6 +47,8 @@ public class GUIdisplay extends JPanel implements MyGUIAppendable {
 	private JTextField blueScoreTextArea;
 	private JTextField greenScoreTextArea;
 	private JTextField sampleScoreTextArea;
+	private JTextArea locationsTextArea;
+
 
 	private Color EXTRA_LIGHT_GREY = new Color(220, 220, 220);
 
@@ -60,6 +64,20 @@ public class GUIdisplay extends JPanel implements MyGUIAppendable {
 		lineSegments = new ArrayList<>();
 		countDownClock(timeLimit);
 		displayScoreTextInit();
+		displayLocationsTextInit();
+	}
+	
+	private void displayLocationsTextInit() {
+		locationsTextArea = new JTextArea();
+		locationsTextArea.setLineWrap(true);
+		locationsTextArea.setWrapStyleWord(true);
+		locationsTextArea.setFont(new Font("sansserif", Font.PLAIN, FONT_SIZE));
+		locationsTextArea.setBackground(Color.YELLOW);
+		locationsTextArea.setBorder(null);
+		locationsTextArea.setEditable(false);
+//		locationsTextArea.setHorizontalAlignment(JTextField.CENTER);
+		locationsTextArea.setForeground(Color.BLACK);
+		locationsTextArea.setText("LOCATIONS: ");
 	}
 
 	private void displayScoreTextInit() {
@@ -153,6 +171,15 @@ public class GUIdisplay extends JPanel implements MyGUIAppendable {
 		greenScoreTextArea.setText("GREEN: " + scoreGreen);
 		sampleScoreTextArea.setText("SAMPLE: " + scoreSample);
 	}
+	
+	@Override
+	public void setLocations(String locations) {
+		// TODO Auto-generated method stub
+		System.out.println(locations);
+		
+	
+		locationsTextArea.setText(locations);
+	}
 
 	@Override
 	public void drawThisGraphicTileArray(ArrayList<GraphicTile> gtarraylist,
@@ -212,6 +239,7 @@ public class GUIdisplay extends JPanel implements MyGUIAppendable {
 		container.add(blueScoreTextArea);
 		container.add(greenScoreTextArea);
 		container.add(sampleScoreTextArea);
+		container.add(locationsTextArea);
 		container.add(emptyPanel);
 
 		container.setPreferredSize(new Dimension(160, 50));
@@ -378,6 +406,14 @@ class MyGUIWorker extends SwingWorker<Void, String> {
 		String tempSampleScore = Integer.toString(corpCollectedScience.get(0).size());
 		myAppendable.setScores(tempBlueScore, tempGreenScore, tempSampleScore);
 	}
+	
+	public void displayLocations(JSONObject obj){
+		System.out.println("in displayLocations!!!!!!!!!!!!!!");
+		myAppendable.setLocations(obj.toString());
+//		myAppendable.append((obj.toString() != null) ? obj.toJSONString() : "");
+//		myAppendable.append("SUPPPPPPPPPPP");
+		
+	}
 }
 
 interface MyGUIAppendable {
@@ -391,5 +427,8 @@ interface MyGUIAppendable {
 	public void clearDisplay();
 
 	public void setScores(String scoreBlue, String scoreGreen, String scoreSample);
+	
+	public void setLocations(String locations);
+	
 
 }
