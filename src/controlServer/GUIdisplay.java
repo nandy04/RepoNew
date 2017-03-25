@@ -75,7 +75,6 @@ public class GUIdisplay extends JPanel implements MyGUIAppendable {
 		locationsTextArea.setBackground(Color.YELLOW);
 		locationsTextArea.setBorder(null);
 		locationsTextArea.setEditable(false);
-//		locationsTextArea.setHorizontalAlignment(JTextField.CENTER);
 		locationsTextArea.setForeground(Color.BLACK);
 		locationsTextArea.setText("LOCATIONS: ");
 	}
@@ -407,11 +406,14 @@ class MyGUIWorker extends SwingWorker<Void, String> {
 		myAppendable.setScores(tempBlueScore, tempGreenScore, tempSampleScore);
 	}
 	
-	public void displayLocations(JSONObject obj){
-		System.out.println("in displayLocations!!!!!!!!!!!!!!");
-		myAppendable.setLocations(obj.toString());
-//		myAppendable.append((obj.toString() != null) ? obj.toJSONString() : "");
-//		myAppendable.append("SUPPPPPPPPPPP");
+	public void displayLocations(JSONObject obj){	
+		String text = "   LOCATIONS\n---------------\n";
+		for(Object key: obj.keySet()){
+//			System.out.println("Key: " + key);
+			text+= key.toString() + ": " + obj.get(key) + "\n\n";
+		}
+		System.out.println(text);
+		myAppendable.setLocations(text);
 		
 	}
 }
