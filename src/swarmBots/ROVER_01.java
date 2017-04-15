@@ -145,7 +145,8 @@ public class ROVER_01 extends Rover {
 				timeRemaining = getTimeRemaining();
 				
 				MapTile[][] scanMapTiles =scanMap.getScanMap();
-				  System.out.println("post message: " + com.postScanMapTiles(currentLoc, scanMapTiles));
+				System.out.println("post message: " + com.postScanMapTiles(currentLoc, scanMapTiles));
+				com.getGlobalMap();
 				
 				// ***** MOVING *****
 				// try moving east 5 block if blocked
