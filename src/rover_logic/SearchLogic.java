@@ -47,6 +47,7 @@ public class SearchLogic {
 
             for (Coord c : getAdjacentCoordinates(u.getCoord(), scanMapTiles, current)) {
                 // if this node hasn't already been checked
+            	
                 if (!closed.contains(new Node(c, 0)) && globalMap.get(c) != null && validateTile(globalMap.get(c), drive)) {
 
                     // TODO: MAYBE: assess cost depending on the tile's terrain, science, etc

@@ -10,7 +10,7 @@ import enums.Terrain;
 
 public class GraphicTile {
 	
-	private final int TILE_SIZE = 20;
+	public static final int TILE_SIZE = 20;
 	int x; //Location values
 	int y;
 	
@@ -21,13 +21,14 @@ public class GraphicTile {
 	Terrain terrain = Terrain.SOIL;
 	Science science = Science.NONE;
 	
-	Color colorTerrain = Color.WHITE;
+	Color colorTerrain = Color.BLUE;
 	Color colorScience = Color.WHITE;
 	Color colorString = Color.BLACK;
 	
 	boolean hasTerrain = false;
 	boolean hasScience = false;
 	boolean hasRover = false;
+	boolean isPartOfPath = false;
 	
 	
 	public GraphicTile(int x, int y){ 	
@@ -148,10 +149,23 @@ public class GraphicTile {
 			
 			g.setColor(outlineColor);
 			g.drawOval(x *TILE_SIZE +2, y *TILE_SIZE +1, 14, 14);
-		}			
+		}	
+		if(isPartOfPath()){
+			g.setColor(Color.GREEN);
+			g.fillRect(x *TILE_SIZE, y *TILE_SIZE, TILE_SIZE, TILE_SIZE);
+		}
+		
 	}
 	
 
+
+	public int getY() {
+		return y;
+	}
+
+	public int getX() {
+		return x;
+	}
 
 	public void setRoverName(String roverName) {
 		this.roverName = roverName;
@@ -166,6 +180,14 @@ public class GraphicTile {
 	public void setScience(Science sci){
 		this.science = sci;
 		this.hasScience = true;
+	}
+	
+	public boolean isPartOfPath(){
+		return isPartOfPath;
+	}
+	
+	public void setPartOfPath(boolean isPath){
+		this.isPartOfPath = isPath;
 	}
 
 	private void setTeamNumber(){

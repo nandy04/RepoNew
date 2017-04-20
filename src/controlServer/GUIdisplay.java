@@ -18,6 +18,7 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.SwingWorker;
 import javax.swing.Timer;
+import javax.swing.plaf.basic.BasicInternalFrameTitlePane.MoveAction;
 
 import org.json.simple.JSONObject;
 
@@ -198,6 +199,8 @@ public class GUIdisplay extends JPanel implements MyGUIAppendable {
 	protected void paintComponent(Graphics g) {
 		super.paintComponent(g);
 		for (GraphicTile graphicTile : graphicTiles) {
+//			g.setColor(Color.GREEN);
+//			g.fillRect(graphicTile.getX() *TILE_SIZE, graphicTile.getY() *TILE_SIZE, TILE_SIZE, TILE_SIZE);
 			graphicTile.drawTile(g);
 		}
 		g.setColor(EXTRA_LIGHT_GREY);
@@ -297,7 +300,7 @@ class MyGUIWorker extends SwingWorker<Void, String> {
 		myAppendable.clearDisplay();
 	}
 
-	public void displayGraphicMap(RoverLocations roverLoc, ScienceLocations sciloc, PlanetMap planetMap) {
+	public void displayGraphicMap(RoverLocations roverLoc, ScienceLocations sciloc, PlanetMap planetMap, List<Coord> movingPath) {
 		int mWidth = planetMap.getWidth();
 		int mHeight = planetMap.getHeight();
 
@@ -322,6 +325,10 @@ class MyGUIWorker extends SwingWorker<Void, String> {
 				}
 				if (sciloc.checkLocation(tcor)) {
 					gtile.setScience(sciloc.scanLocation(tcor));
+				}
+				//check if the tile is part of moving path to be highlighted
+				if(movingPath.contains(tcor)){
+					gtile.setPartOfPath(true);
 				}
 				graphicTiles.add(gtile);
 			}
@@ -388,8 +395,8 @@ class MyGUIWorker extends SwingWorker<Void, String> {
 		myAppendable.drawThisGraphicTileArray(graphicTiles, lineSegmentArrayList);
 	}
 
-	public void displayFullMap(RoverLocations roverLoc, ScienceLocations sciloc, PlanetMap planetMap) {
-		displayGraphicMap(roverLoc, sciloc, planetMap);
+	public void displayFullMap(RoverLocations roverLoc, ScienceLocations sciloc, PlanetMap planetMap, List<Coord> movingPath) {
+		displayGraphicMap(roverLoc, sciloc, planetMap, movingPath);
 	}
 
 	@Override
