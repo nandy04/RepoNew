@@ -105,6 +105,9 @@ public class Communication {
                 tile.put("y", yp);
                 tile.put("terrain", mapTile.getTerrain().toString());
                 tile.put("science", mapTile.getScience().toString());
+                tile.put("satus", "open");
+                tile.put("harvestStatus", "OPEN");
+                tile.put("harvestedBy", "UNKNOWN_ROVER");
                 tiles.add(tile);
             }
         }

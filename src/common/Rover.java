@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.List;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -32,20 +33,20 @@ public class Rover {
 	protected static final int PORT_ADDRESS = 9537;
 	
 	//TODO add code to the move methods to check for impassable terrain
-	protected void moveNorth(){
-		sendTo_RCP.println("MOVE N");
+	protected void moveNorth(String route){
+		sendTo_RCP.println("MOVE N " + route);
 	}
 	
-	protected void moveSouth(){
-		sendTo_RCP.println("MOVE S");
+	protected void moveSouth(String route){
+		sendTo_RCP.println("MOVE S " + route);
 	}
 	
-	protected void moveEast(){
-		sendTo_RCP.println("MOVE E");
+	protected void moveEast(String route){
+		sendTo_RCP.println("MOVE E " + route);
 	}
 	
-	protected void moveWest(){
-		sendTo_RCP.println("MOVE W");
+	protected void moveWest(String route){
+		sendTo_RCP.println("MOVE W " + route);
 	}
 	
 	protected Coord getStartLocation() throws IOException{
@@ -78,6 +79,8 @@ public class Rover {
 	
 	protected Coord getCurrentLocation() throws IOException{
 		String line = null;
+	
+		
 		sendTo_RCP.println("LOC");
 		line = receiveFrom_RCP.readLine();
 		if(line == null){
@@ -89,6 +92,8 @@ public class Rover {
 		}
 		return null;
 	}
+	
+
 	
 	protected void clearReadLineBuffer() throws IOException{
 		while(receiveFrom_RCP.ready()){

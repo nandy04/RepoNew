@@ -8,18 +8,33 @@ import java.io.PrintWriter;
 import java.lang.reflect.Type;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Random;
+
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 
 import common.Communication;
+import common.CommunicationHelper;
 import common.Coord;
 import common.MapTile;
+import common.PlanetMap;
 import common.Rover;
 import common.ScanMap;
+import enums.RoverConfiguration;
+import enums.RoverDriveType;
 import enums.Terrain;
+import rover_logic.SearchLogic;
+
+import enums.RoverToolType;
+import controlServer.RoverCommandProcessor;
+import controlServer.RoverStats;
 
 /**
  * The seed that this program is built on is a chat program example found here:
@@ -29,6 +44,8 @@ import enums.Terrain;
 
 @SuppressWarnings("unused")
 public class ROVER_01 extends Rover {
+	
+
 
 
 	public ROVER_01() {
@@ -121,7 +138,7 @@ public class ROVER_01 extends Rover {
 			while (true) {                     //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 				
 				// **** Request Rover Location from RCP ****
-				currentLoc = getCurrentLocation();
+				currentLoc = getCurrentLocation();//will also send the current moving 
 				
 				
 //			        System.err.println("GOT: " + com.getRoverLocations());
@@ -145,8 +162,28 @@ public class ROVER_01 extends Rover {
 				timeRemaining = getTimeRemaining();
 				
 				MapTile[][] scanMapTiles =scanMap.getScanMap();
-				  System.out.println("post message: " + com.postScanMapTiles(currentLoc, scanMapTiles));
+//				  System.out.println("post message: " + 
+				com.postScanMapTiles(currentLoc, scanMapTiles);
+//				  );
+				  
+				// another call for current location
+				SearchLogic search = new SearchLogic();
+				//get an item from the available sciences to be harvested
+				Coord destination = new Coord(10, 10);
 				
+				 List<String> moves = search.Astar(currentLoc, destination, scanMapTiles, RoverDriveType.WHEELS, 
+						 jsonToMap(com.getGlobalMap()));
+//				 System.out.println("\n\n\n");
+//		         System.out.println(rovername + "currentLoc: " + currentLoc + ", destination: " + destination);
+//		         System.out.println(rovername + " moves: " + moves.toString());
+//		         System.out.println("\n\n\n");
+//		         
+		 		String route = "";
+		 		for(String s: moves){
+		 			route += s + " ";
+		 		}
+		 		route.trim();
+			
 				// ***** MOVING *****
 				// try moving east 5 block if blocked
 				  scanMapTiles = scanMap.getScanMap();
@@ -158,13 +195,15 @@ public class ROVER_01 extends Rover {
 					
 					 if (!isBlock(getNextTile("E", centerIndex, scanMapTiles))) {
 				
-							moveEast();
+							moveEast(route);
 							blocked = false;
 							currentDir ="E";
 						}
-					 else if (!isBlock(getNextTile("N", centerIndex, scanMapTiles))) {
-						 System.out.println("Blocked, moving North");
-						moveNorth();
+
+					 else if (!scanMapTiles[centerIndex][centerIndex-1].getHasRover() 
+							&& scanMapTiles[centerIndex][centerIndex-1].getTerrain() == Terrain.SOIL) {
+//						 System.out.println("Blocked, moving North");
+						moveNorth(route);
 						blocked = false;
 						currentDir ="N";
 						
@@ -172,8 +211,8 @@ public class ROVER_01 extends Rover {
 					
 					else if (!isBlock(getNextTile("S", centerIndex, scanMapTiles))) {
 			
-						System.out.println("Blocked, moving South");
-						moveSouth();
+//						System.out.println("Blocked, moving South");
+						moveSouth(route);
 						blocked = false;
 						currentDir ="S";
 						
@@ -181,7 +220,7 @@ public class ROVER_01 extends Rover {
 					
 					else{
 						
-						moveWest();
+						moveWest(route);
 						
 						blocked =false;
 						currentDir ="W";
@@ -192,19 +231,19 @@ public class ROVER_01 extends Rover {
 				} else {
 					
 					if(currentDir =="N"){
-						
-					
-						 if (!isBlock(getNextTile("N", centerIndex, scanMapTiles))) {
-								moveNorth();
-								System.out.println("Not blocked, moving North");
+						 if (!scanMapTiles[centerIndex][centerIndex-1].getHasRover() 
+									&& scanMapTiles[centerIndex][centerIndex-1].getTerrain() == Terrain.SOIL) {
+								moveNorth(route);
+//								System.out.println("Not blocked, moving North");
 							}
 						 else
 							 blocked = true;
 					}
 					else if(currentDir == "S"){
-						 if (!isBlock(getNextTile("S", centerIndex, scanMapTiles))) {
-							 System.out.println("Not blocked, moving South");
-							moveSouth();
+						 if (!scanMapTiles[centerIndex][centerIndex+1].getHasRover() 
+								&& scanMapTiles[centerIndex][centerIndex+1].getTerrain() == Terrain.SOIL) {
+//							 System.out.println("Not blocked, moving SOuth");
+							moveSouth(route);
 //							
 						}
 						 else
@@ -212,16 +251,18 @@ public class ROVER_01 extends Rover {
 					}
 						
 					else if(currentDir == "E"){
-						 if (!isBlock(getNextTile("E", centerIndex, scanMapTiles))) {		
-							moveEast();
+						 if (!scanMapTiles[centerIndex+1][centerIndex].getHasRover() 
+								&& scanMapTiles[centerIndex+1][centerIndex].getTerrain() == Terrain.SOIL) {		
+							moveEast(route);
 						}
 						 else 
 							 blocked = true;
 					}
 						
 					else{
-						if (!isBlock(getNextTile("W", centerIndex, scanMapTiles))) {
-							moveWest();
+						if (!scanMapTiles[centerIndex][centerIndex+1].getHasRover() 
+								&& scanMapTiles[centerIndex][centerIndex+1].getTerrain() == Terrain.SOIL) {
+							moveWest(route);
 						}
 					 else
 						 blocked = true;
@@ -229,8 +270,9 @@ public class ROVER_01 extends Rover {
 								
 					
 				}
-//	
-				// another call for current location
+
+			
+	             
 				currentLoc = getCurrentLocation();
 
 	
@@ -261,9 +303,50 @@ public class ROVER_01 extends Rover {
 	
 	// ####################### Support Methods #############################
 	
-	
-	
+	private Map<Coord, MapTile> jsonToMap(JSONArray data) {
+		Map<Coord, MapTile> globalMap = new HashMap<>();
+    	MapTile tempTile;
 
+    	
+        for (Object o : data) {
+            JSONObject jsonObj = (JSONObject) o;
+            boolean marked = (jsonObj.get("g") != null) ? true : false;
+            int x = (int) (long) jsonObj.get("x");
+            int y = (int) (long) jsonObj.get("y");
+            Coord coord = new Coord(x, y);
+
+            MapTile tile = CommunicationHelper.convertToMapTile(jsonObj);
+            globalMap.put(coord, tile); 
+        }
+        
+        return globalMap;
+	}
+	
+	//find a task/science to be harvested
+//	private void getNextTask(ArrayList<String> equipment){
+//		 String url = "http://localhost:3000/api";
+//	        String corp_secret = "gz5YhL70a2";
+//
+//	        RoverConfiguration rConfig = RoverConfiguration.getEnum("ROVER_01"); 
+//             RoverStats rover = new RoverStats(rConfig);
+//              
+//	        Communication com = new Communication(url, rovername, corp_secret);
+//		for (Object o : data) {
+//
+//            JSONObject jsonObj = (JSONObject) o;
+//            String status = (String)jsonObj.get("harvestStatus");
+//            
+//            if(status.equals("OPEN")){
+//            	
+//            	
+////            	int x = (int) (long) jsonObj.get("x");
+////                int y = (int) (long) jsonObj.get("y");
+////                Coord coord = new Coord(x, y);
+//            }
+//            
+//		}
+//
+//	}
 
 	/**
 	 * Runs the client
