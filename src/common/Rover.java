@@ -197,4 +197,8 @@ public class Rover {
 		}
 		return null;
 	}
+	
+	protected void gather(){
+		sendTo_RCP.println("GATHER");
+	}
 }

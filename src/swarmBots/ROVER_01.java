@@ -8,6 +8,7 @@ import java.io.PrintWriter;
 import java.lang.reflect.Type;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -154,7 +155,7 @@ public class ROVER_01 extends Rover {
 				// gets the scanMap from the server based on the Rover current location
 				scanMap = doScan(); 
 				// prints the scanMap to the Console output for debug purposes
-				scanMap.debugPrintMap();
+//				scanMap.debugPrintMap();
 				
 		
 							
@@ -165,11 +166,11 @@ public class ROVER_01 extends Rover {
 //				  System.out.println("post message: " + 
 				com.postScanMapTiles(currentLoc, scanMapTiles);
 //				  );
-				  
+
 				// another call for current location
 				SearchLogic search = new SearchLogic();
 				//get an item from the available sciences to be harvested
-				Coord destination = new Coord(10, 10);
+				Coord destination = new Coord(20, 20);
 				
 				 List<String> moves = search.Astar(currentLoc, destination, scanMapTiles, RoverDriveType.WHEELS, 
 						 jsonToMap(com.getGlobalMap()));
@@ -183,23 +184,40 @@ public class ROVER_01 extends Rover {
 		 			route += s + " ";
 		 		}
 		 		route.trim();
-			
+		 		
+
 				// ***** MOVING *****
+
+		 		int centerIndex = (scanMap.getEdgeSize() - 1)/2;
+		 		//workaround until fix bug Astar has rover
+		 		if(!stuck && stepCount==0){
+		 			String nextMove = moves.get(0);
+			 		switch (nextMove) {
+				 		case "N": moveNorth(route); currentDir = "N"; break; 
+				 		case "E": moveEast(route); currentDir = "E"; break;
+				 		case "W": moveWest(route); currentDir = "W"; break;
+				 		case "S": moveSouth(route); currentDir = "S"; break;
+				 		default: currentDir = moveWander(route, currentDir, centerIndex, scanMapTiles); break;	
+			 		}
+		 		}else {
+		 			currentDir = moveWander(route, currentDir, centerIndex, scanMapTiles);
+		 			stepCount++;
+		 			if(stepCount==5) stepCount=0;
+		 		}
+		 		/*
 				// try moving east 5 block if blocked
-				  scanMapTiles = scanMap.getScanMap();
-				  int centerIndex = (scanMap.getEdgeSize() - 1)/2;
-				  foundUnreachScience(scanMapTiles);
 				if (blocked) {
-					
+					scanMapTiles = scanMap.getScanMap();
+					int centerIndex = (scanMap.getEdgeSize() - 1)/2;
 				
 					
-					 if (!isBlock(getNextTile("E", centerIndex, scanMapTiles))) {
+					 if (!scanMapTiles[centerIndex+1][centerIndex].getHasRover() 
+								&& scanMapTiles[centerIndex+1][centerIndex].getTerrain() == Terrain.SOIL) {
 				
 							moveEast(route);
 							blocked = false;
 							currentDir ="E";
 						}
-
 					 else if (!scanMapTiles[centerIndex][centerIndex-1].getHasRover() 
 							&& scanMapTiles[centerIndex][centerIndex-1].getTerrain() == Terrain.SOIL) {
 //						 System.out.println("Blocked, moving North");
@@ -209,7 +227,8 @@ public class ROVER_01 extends Rover {
 						
 					}
 					
-					else if (!isBlock(getNextTile("S", centerIndex, scanMapTiles))) {
+					else if (!scanMapTiles[centerIndex][centerIndex+1].getHasRover() 
+							&& scanMapTiles[centerIndex][centerIndex+1].getTerrain() == Terrain.SOIL) {
 			
 //						System.out.println("Blocked, moving South");
 						moveSouth(route);
@@ -229,8 +248,12 @@ public class ROVER_01 extends Rover {
 					
 					
 				} else {
+					scanMapTiles = scanMap.getScanMap();
+					int centerIndex = (scanMap.getEdgeSize() - 1)/2;
 					
 					if(currentDir =="N"){
+						
+					
 						 if (!scanMapTiles[centerIndex][centerIndex-1].getHasRover() 
 									&& scanMapTiles[centerIndex][centerIndex-1].getTerrain() == Terrain.SOIL) {
 								moveNorth(route);
@@ -267,12 +290,23 @@ public class ROVER_01 extends Rover {
 					 else
 						 blocked = true;
 					}
-								
+				
+				
+					
+						
+					
 					
 				}
-
-			
-	             
+				
+				*/
+		 		
+		 	// ***** GATHERING *****
+		 		centerIndex = (scanMap.getEdgeSize() - 1)/2;
+		 		if ((scanMapTiles[centerIndex][centerIndex].getScience().toString().equals("ORGANIC"))) {
+		 			gather();
+		 			
+		 		}
+	             //////////////////////////
 				currentLoc = getCurrentLocation();
 
 	
@@ -368,11 +402,11 @@ public class ROVER_01 extends Rover {
 	public MapTile getNextTile(String direction, int centerIndex, MapTile[][] scanMapTiles){
 		MapTile nextTile = new MapTile();
 		switch (direction) {
-		case "N": nextTile = scanMapTiles[centerIndex][centerIndex - 1]; break; 
-		case "E": nextTile = scanMapTiles[centerIndex + 1][centerIndex]; break;
-		case "W": nextTile = scanMapTiles[centerIndex - 1][centerIndex]; break;
-		case "S": nextTile = scanMapTiles[centerIndex][centerIndex + 1]; break;
-		default: break;	
+			case "N": nextTile = scanMapTiles[centerIndex][centerIndex - 1]; break; 
+			case "E": nextTile = scanMapTiles[centerIndex + 1][centerIndex]; break;
+			case "W": nextTile = scanMapTiles[centerIndex - 1][centerIndex]; break;
+			case "S": nextTile = scanMapTiles[centerIndex][centerIndex + 1]; break;
+			default: break;	
 		}
 		
 		return nextTile;	
@@ -382,23 +416,33 @@ public class ROVER_01 extends Rover {
 		return nextTile.getHasRover() || !(nextTile.getTerrain() == Terrain.SOIL || nextTile.getTerrain() == Terrain.GRAVEL);
 	}
 	
-	public boolean foundUnreachScience(MapTile[][] scanMapTiles) {
-		System.out.println("in method");
-		int edgeSize = scanMap.getEdgeSize();
-		for (int j = 0; j < edgeSize; j++) {
-			for (int i = 0; i < edgeSize; i++) {
-				// check if there is science in the tile
-				if ((scanMapTiles[i][j].getScience().toString().equals("RADIOACTIVE"))) {
-					if (scanMapTiles[i][j].getTerrain().toString().equals("SAND")
-							|| scanMapTiles[i][j].getTerrain().toString().equals("ROCK")) {
-						System.out.println("found unreachable");
-						return true;
-					}
-				}
+	public String moveWander(String route, String currentDir, int centerIndex, MapTile[][] scanMapTiles ){
+		//moving same direction if not block
+		if (!isBlock(getNextTile(currentDir, centerIndex, scanMapTiles))) {
+	 		switch (currentDir) {
+		 		case "N": moveNorth(route); break; 
+		 		case "E": moveEast(route); break;
+		 		case "W": moveWest(route); break;
+		 		case "S": moveSouth(route); break;
+		 		default: break;	
+			}
+		} else {
+			System.out.println("block");
+			if (!isBlock(getNextTile("E", centerIndex, scanMapTiles))) {
+				moveEast(route);
+				currentDir = "E";
+			}else if (!isBlock(getNextTile("N", centerIndex, scanMapTiles))) {
+				moveNorth(route);
+				currentDir = "N";
+			}else if (!isBlock(getNextTile("S", centerIndex, scanMapTiles))) {
+				moveSouth(route);
+				currentDir = "S";
+			}else {
+				moveWest(route);
+				currentDir = "W";
 			}
 		}
-
-		return false;
+		return currentDir;
 	}
-	
 }
+
