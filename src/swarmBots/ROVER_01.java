@@ -172,8 +172,10 @@ public class ROVER_01 extends Rover {
 				//get an item from the available sciences to be harvested
 				Coord destination = new Coord(20, 20);
 				
+				int scanMapSize = scanMap.getEdgeSize();
+				
 				 List<String> moves = search.Astar(currentLoc, destination, scanMapTiles, RoverDriveType.WHEELS, 
-						 jsonToMap(com.getGlobalMap()));
+						 jsonToMapUpdateRover(com.getGlobalMap(), currentLoc, scanMapTiles, scanMapSize));
 //				 System.out.println("\n\n\n");
 //		         System.out.println(rovername + "currentLoc: " + currentLoc + ", destination: " + destination);
 //		         System.out.println(rovername + " moves: " + moves.toString());
@@ -185,9 +187,17 @@ public class ROVER_01 extends Rover {
 		 		}
 		 		route.trim();
 		 		
+		 		String nextMove = moves.get(0);
+		 		switch (nextMove) {
+			 		case "N": moveNorth(route); currentDir = "N"; break; 
+			 		case "E": moveEast(route); currentDir = "E"; break;
+			 		case "W": moveWest(route); currentDir = "W"; break;
+			 		case "S": moveSouth(route); currentDir = "S"; break;
+			 		default:  break;	
+		 		}
 
 				// ***** MOVING *****
-
+/*
 		 		int centerIndex = (scanMap.getEdgeSize() - 1)/2;
 		 		//workaround until fix bug Astar has rover
 		 		if(!stuck && stepCount==0){
@@ -204,6 +214,7 @@ public class ROVER_01 extends Rover {
 		 			stepCount++;
 		 			if(stepCount==5) stepCount=0;
 		 		}
+*/		 		
 		 		/*
 				// try moving east 5 block if blocked
 				if (blocked) {
@@ -301,7 +312,7 @@ public class ROVER_01 extends Rover {
 				*/
 		 		
 		 	// ***** GATHERING *****
-		 		centerIndex = (scanMap.getEdgeSize() - 1)/2;
+		 		int centerIndex = (scanMap.getEdgeSize() - 1)/2;
 		 		if ((scanMapTiles[centerIndex][centerIndex].getScience().toString().equals("ORGANIC"))) {
 		 			gather();
 		 			
@@ -350,6 +361,37 @@ public class ROVER_01 extends Rover {
             Coord coord = new Coord(x, y);
 
             MapTile tile = CommunicationHelper.convertToMapTile(jsonObj);
+            globalMap.put(coord, tile); 
+        }
+        
+        return globalMap;
+	}
+	
+	private Map<Coord, MapTile> jsonToMapUpdateRover(JSONArray data, Coord currentLoc, MapTile[][] scanMapTiles, int scanMapSize) {
+		Map<Coord, MapTile> globalMap = new HashMap<>();
+    	MapTile tempTile;
+    	int currentX = currentLoc.getXpos();
+    	int currentY = currentLoc.getYpos();
+    	int offset = (scanMapSize - 1) / 2;
+    	int minX = currentX - offset;
+    	int maxX = currentX + offset;
+    	int minY = currentY - offset;
+    	int maxY = currentY + offset;
+    	
+        for (Object o : data) {
+            JSONObject jsonObj = (JSONObject) o;
+            boolean marked = (jsonObj.get("g") != null) ? true : false;
+            int x = (int) (long) jsonObj.get("x");
+            int y = (int) (long) jsonObj.get("y");
+            Coord coord = new Coord(x, y);
+
+            MapTile tile = CommunicationHelper.convertToMapTile(jsonObj);
+            if(minX <= x && x <= maxX && minY <= y && y <= maxY){
+            	if(scanMapTiles[x - currentX + offset][y - currentY + offset].getHasRover()){
+            		tile.setHasRoverTrue();
+            	}
+            }
+            
             globalMap.put(coord, tile); 
         }
         
