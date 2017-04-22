@@ -109,7 +109,11 @@ public class ROVER_01 extends Rover {
 			cardinals[1] = "E";
 			cardinals[2] = "S";
 			cardinals[3] = "W";	
-			String currentDir = cardinals[0];		
+			String currentDir = cardinals[0];
+			long lastGatherTime = 0;
+			long gatherTimePerTile = 3400;
+			boolean isGathering = false;
+			
 			
 			/**
 			 *  ### Retrieve static values from RCP ###
@@ -189,16 +193,19 @@ public class ROVER_01 extends Rover {
 		 		
 
 				// ***** MOVING *****
-
-		 		// rover will follow highlight path, if no path it will move in one direction
+		 		// check gathering done
 		 		int centerIndex = (scanMap.getEdgeSize() - 1)/2;
-		 		String nextMove = moves.get(0);
-		 		switch (nextMove) {
-			 	case "N": moveNorth(route); currentDir = "N"; break; 
-			 	case "E": moveEast(route); currentDir = "E"; break;
-			 	case "W": moveWest(route); currentDir = "W"; break;
-			 	case "S": moveSouth(route); currentDir = "S"; break;
-			 	default: currentDir = moveStraight(route, currentDir, centerIndex, scanMapTiles); break;		
+		 		if(lastGatherTime + gatherTimePerTile < System.currentTimeMillis()){
+		 			isGathering = false;
+			 		// rover will follow highlight path, if no path it will move in one direction
+			 		String nextMove = moves.get(0);
+			 		switch (nextMove) {
+				 	case "N": moveNorth(route); currentDir = "N"; break; 
+				 	case "E": moveEast(route); currentDir = "E"; break;
+				 	case "W": moveWest(route); currentDir = "W"; break;
+				 	case "S": moveSouth(route); currentDir = "S"; break;
+				 	default: currentDir = moveStraight(route, currentDir, centerIndex, scanMapTiles); break;		
+			 		}
 		 		}
 	 		
 		 		/*
@@ -298,9 +305,10 @@ public class ROVER_01 extends Rover {
 				*/
 		 		
 		 	// ***** GATHERING *****
-		 		if ((scanMapTiles[centerIndex][centerIndex].getScience().toString().equals("ORGANIC"))) {
+		 		if (scanMapTiles[centerIndex][centerIndex].getScience().toString().equals("ORGANIC") && !isGathering) {
+		 			isGathering = true;
 		 			gather();
-		 			
+		 			lastGatherTime = System.currentTimeMillis();
 		 		}
 	             //////////////////////////
 				currentLoc = getCurrentLocation();
