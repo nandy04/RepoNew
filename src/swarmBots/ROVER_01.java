@@ -187,34 +187,20 @@ public class ROVER_01 extends Rover {
 		 		}
 		 		route.trim();
 		 		
-		 		String nextMove = moves.get(0);
-		 		switch (nextMove) {
-			 		case "N": moveNorth(route); currentDir = "N"; break; 
-			 		case "E": moveEast(route); currentDir = "E"; break;
-			 		case "W": moveWest(route); currentDir = "W"; break;
-			 		case "S": moveSouth(route); currentDir = "S"; break;
-			 		default:  break;	
-		 		}
 
 				// ***** MOVING *****
-/*
+
+		 		// rover will follow highlight path, if no path it will move in one direction
 		 		int centerIndex = (scanMap.getEdgeSize() - 1)/2;
-		 		//workaround until fix bug Astar has rover
-		 		if(!stuck && stepCount==0){
-		 			String nextMove = moves.get(0);
-			 		switch (nextMove) {
-				 		case "N": moveNorth(route); currentDir = "N"; break; 
-				 		case "E": moveEast(route); currentDir = "E"; break;
-				 		case "W": moveWest(route); currentDir = "W"; break;
-				 		case "S": moveSouth(route); currentDir = "S"; break;
-				 		default: currentDir = moveWander(route, currentDir, centerIndex, scanMapTiles); break;	
-			 		}
-		 		}else {
-		 			currentDir = moveWander(route, currentDir, centerIndex, scanMapTiles);
-		 			stepCount++;
-		 			if(stepCount==5) stepCount=0;
+		 		String nextMove = moves.get(0);
+		 		switch (nextMove) {
+			 	case "N": moveNorth(route); currentDir = "N"; break; 
+			 	case "E": moveEast(route); currentDir = "E"; break;
+			 	case "W": moveWest(route); currentDir = "W"; break;
+			 	case "S": moveSouth(route); currentDir = "S"; break;
+			 	default: currentDir = moveStraight(route, currentDir, centerIndex, scanMapTiles); break;		
 		 		}
-*/		 		
+	 		
 		 		/*
 				// try moving east 5 block if blocked
 				if (blocked) {
@@ -312,7 +298,6 @@ public class ROVER_01 extends Rover {
 				*/
 		 		
 		 	// ***** GATHERING *****
-		 		int centerIndex = (scanMap.getEdgeSize() - 1)/2;
 		 		if ((scanMapTiles[centerIndex][centerIndex].getScience().toString().equals("ORGANIC"))) {
 		 			gather();
 		 			
@@ -458,7 +443,7 @@ public class ROVER_01 extends Rover {
 		return nextTile.getHasRover() || !(nextTile.getTerrain() == Terrain.SOIL || nextTile.getTerrain() == Terrain.GRAVEL);
 	}
 	
-	public String moveWander(String route, String currentDir, int centerIndex, MapTile[][] scanMapTiles ){
+	public String moveStraight(String route, String currentDir, int centerIndex, MapTile[][] scanMapTiles ){
 		//moving same direction if not block
 		if (!isBlock(getNextTile(currentDir, centerIndex, scanMapTiles))) {
 	 		switch (currentDir) {
