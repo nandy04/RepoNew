@@ -138,7 +138,7 @@ public class ROVER_00 extends Rover {
                 // try moving east 5 block if blocked
                 if (blocked) {
                     if(stepCount > 0){
-                        moveEast();
+                        moveEast("");
                         stepCount -= 1;
                     }
                     else {
@@ -165,7 +165,7 @@ public class ROVER_00 extends Rover {
                             stepCount = 5;  //side stepping
                         } else {
                             // request to server to move
-                            moveSouth();
+                            moveSouth("");
                             
                         }
                         
@@ -181,7 +181,7 @@ public class ROVER_00 extends Rover {
                             stepCount = 5;  //side stepping
                         } else {
                             // request to server to move
-                            moveNorth();			
+                            moveNorth("");			
                         }					
                     }
                 }
