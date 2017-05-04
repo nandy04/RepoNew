@@ -43,10 +43,12 @@ public class HackerShirts {
                     sizesMap.subMap(smallest, largest+1).clear();
                 }
             }
-            
+            System.out.println("******************");
+            System.out.println(count);
             System.out.println(count);
         }
     }
+	
 }
 /*
 2
